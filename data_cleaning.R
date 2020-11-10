@@ -3,9 +3,10 @@ load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00005906-L
 load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00006501-Latinobarometro2017_r/Latinobarometro2017Eng_v20180117.rdata")
 Latinobarometro_2018_Esp_R_v20190303 <- readRDS("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00008548-Latinobarometro_2018_Esp_R_v20190303/Latinobarometro_2018_Esp_R_v20190303.rds")
 load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/LAT_Latinobarometro2013_r/Latinobarometro2013Eng.rdata")
-F00008653_SerieDeTiempo_1995_2018 <- read_excel("F00008653-SerieDeTiempo_1995_2018.xlsx")
+F00008653_SerieDeTiempo_1995_2018 <- read_xlsx("F00008653-SerieDeTiempo_1995_2018.xlsx")
 
 library(dplyr)
+library(readxl)
 
 codebook <- select(F00008653_SerieDeTiempo_1995_2018, -('v1995':'v2011')) %>% #Dropping years that will not be analyzed.
   rename_with(~as.integer(sub("v", "", .x)), .cols = 9:13) #Standardizing year variables.
@@ -37,7 +38,7 @@ variable_selection <- function(whole_data){
 }
 
 codes_2013 <- data.frame("2013" = colnames(BRAZIL_2013))
-rename(codes_2013, "X2013" = "2013") # I don't understand why this X showed up, so I have this solution for now.
+rename(codes_2013, "2013" = "X2013") # I don't understand why this X showed up, so I have this solution for now.
 codes_2013_int = left_join(codes_2013, codebook)
 list_var <- as.vector(codes_2013_int['2015'], mode = 'character')
 colnames(BRAZIL_2013) <- list_var
