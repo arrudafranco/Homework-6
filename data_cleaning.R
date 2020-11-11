@@ -1,5 +1,11 @@
 library(dplyr)
 library(readxl)
+#install.packages("sjlabelled")
+library(sjlabelled)
+#https://rdrr.io/cran/sjlabelled/man/remove_all_labels.html
+#The above package was helpful to deal with the labelled 2018 dataset, before
+#combining all of them.
+
 
 load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00004532-Latinobarometro_2015_r/Latinobarometro_2015_Eng.rdata")
 load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00005906-Latinobarometro2016_r/Latinobarometro2016Eng_v20170205.rdata")
@@ -8,7 +14,7 @@ Latinobarometro_2018_Esp_R_v20190303 <- readRDS("C:/Users/Gustavo/OneDrive/Docum
 load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/LAT_Latinobarometro2013_r/Latinobarometro2013Eng.rdata")
 F00008653_SerieDeTiempo_1995_2018 <- read_xlsx("F00008653-SerieDeTiempo_1995_2018.xlsx")
 
-codebook <- select(F00008653_SerieDeTiempo_1995_2018, -('v1995':'v2011')) %>% #Dropping years that will not be analyzed.
+codebook <- dplyr::select(F00008653_SerieDeTiempo_1995_2018, -('v1995':'v2011')) %>% #Dropping years that will not be analyzed.
   rename_with(~sub("v", "", .x), .cols = 9:13) #Standardizing year variables.
 
 #Still standardizing year variables.
@@ -30,42 +36,46 @@ brazil_filter(Latinobarometro2016Eng_v20170205)
 brazil_filter(Latinobarometro2017Eng_v20180117)
 brazil_filter(Latinobarometro_2018_Esp_R_v20190303)
 
-#I had written down in my personal notes my variables of interest.
-#I knew they spanned all the years I am investigating, but I only had the 2018 codes.
-#To solve this issue, I made a list of 2018 variables of interest, and filtered the codebook.
+#I made a list of variables of interest, then filtered the codebook.
 
-vars_interest <- c('S5', 'S5A', 'P69ST.2', 'P15STGBSC.A', 'P15STGBSC.B',
-                   'P15STGBSC.C', 'P12STGBS', 'P13STGBS.A', 'NUMINVES')
+vars_interest <- c('A_001_001', 'A_003_031', 'H_002_101', 'H_002_111', 'H_002_161',
+                   'I_001_001', 'S_700', 'S_701', 'X_002')
 
-codebook_reduced <- filter(codebook, `2018` %in% vars_interest) %>%
+codebook_reduced <- filter(codebook, `Indice` %in% vars_interest) %>%
   rename('English' = 'Inglés')
 
 #The following function finds out the year of each data set by selecting its first cell.
 #Like previously, it works because the data sets are divided by year.
 #The year selects the desirable variables through its column in the codebook_reduced.
-#To finish standardizing the variables, I continue to use 2018 as the reference year.
-#If the data set is not from 2018, the function will substitute each variable by its correspondent.
+#I finish standardizing the variables with a function to substitute each variable
+#by its 'Indice' correspondent.
 
-variable_selection <- function(whole_data){
+variable_selection <- function(whole_data, first = FALSE){
   year_function <- as.character(whole_data[1, 1])
-  filtered_data <- select(whole_data, codebook_reduced[[year_function]])
-  if (year_function == '2018') {
-    assign('combined_dataset', filtered_data, envir=.GlobalEnv)
+  filtered_data <- dplyr::select(whole_data, codebook_reduced[[year_function]])
+  for (i in vars_interest) {
+    old_var <- as.character(codebook_reduced[codebook_reduced$'Indice' == i,][year_function])
+    filtered_data <- rename_with(filtered_data, ~sub(paste(old_var), paste(i), .x))
+  }
+  if (first == TRUE){
+    assign('combining_dataset', filtered_data, envir=.GlobalEnv)
+    #Start a combined dataset, 
   }
   else{
-    for (i in vars_interest) {
-      old_var <- as.character(codebook_reduced[codebook_reduced$'2018' == i,][year_function])
-      filtered_data <- rename_with(filtered_data, ~sub(paste(old_var), paste(i), .x))
+    if (year_function == '2018'){
+      filtered_data <- remove_all_labels(filtered_data)
+      #Removes labels from 2018 dataset.
     }
-    bind_rows(combined_dataset, filtered_data) #Trying to iteratively combine the datasets.
+    new_name <- paste('BRAZIL', year_function, 'FILTERED', sep = "_") #Creates new dataframe.
+    assign(new_name, filtered_data, envir=.GlobalEnv)
   }
 }
 
+variable_selection(BRAZIL_2013, first = TRUE)
 variable_selection(BRAZIL_2018)
 variable_selection(BRAZIL_2017)
 variable_selection(BRAZIL_2016)
 variable_selection(BRAZIL_2015)
-variable_selection(BRAZIL_2013)
 
-#new_name <- paste('BRAZIL', year_function, 'FILTERED', sep = "_") #Creates new dataframe.
-#assign(new_name, filtered_data, envir=.GlobalEnv)
+full_dataset <- bind_rows(combining_dataset, BRAZIL_2018_FILTERED, BRAZIL_2017_FILTERED,
+                      BRAZIL_2016_FILTERED, BRAZIL_2015_FILTERED)
