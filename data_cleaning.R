@@ -14,20 +14,22 @@ Latinobarometro_2018_Esp_R_v20190303 <- readRDS("F00008548-Latinobarometro_2018_
 load("LAT_Latinobarometro2013_r/Latinobarometro2013Eng.rdata")
 F00008653_SerieDeTiempo_1995_2018 <- read_xlsx("F00008653-SerieDeTiempo_1995_2018.xlsx")
 
-codebook <- dplyr::select(F00008653_SerieDeTiempo_1995_2018, -('v1995':'v2011')) %>% #Dropping years that will not be analyzed.
+codebook <- dplyr::select(F00008653_SerieDeTiempo_1995_2018, -('v1995':'v2011')) %>%
+  #Dropping years that will not be analyzed.
   rename_with(~sub("v", "", .x), .cols = 9:13) #Standardizing year variables.
 
 #Still standardizing year variables.
 latinobarometro_2015 <- mutate(Latinobarometro_2015_Eng, numinves = 2015, .keep = "unused")
 latinobarometro_2013 <- mutate(Latinobarometro2013Eng, numinves = 2013, .keep = "unused")
 
-#Function that standardizes column names so it's possible to safely filter only data from Brazil.
+#Function that standardizes column names defensively before filtering only data from Brazil.
 brazil_filter <- function(data_year){
   upper_case_colnames <- rename_with(data_year, .fn = toupper)
   only_brazil <- filter(upper_case_colnames, IDENPA == 76)
   new_name <- paste('BRAZIL', as.character(data_year[1, 1]), sep = "_") #Creates new dataframe.
   assign(new_name, only_brazil, envir=.GlobalEnv)
-  #Since each original dataframe only has data from a single year, it makes sense to extract names from the first year cell in each.
+  #Since each original dataframe only has data from a single year,
+  #it makes sense to extract names from the first cell in their year column.
 }
 
 brazil_filter(latinobarometro_2013)
@@ -41,8 +43,7 @@ brazil_filter(Latinobarometro_2018_Esp_R_v20190303)
 vars_interest <- c('A_001_001', 'A_003_031', 'H_002_101', 'H_002_111', 'H_002_161',
                    'I_001_001', 'S_700', 'S_701', 'X_002')
 
-codebook_reduced <- filter(codebook, `Indice` %in% vars_interest) %>%
-  rename('English' = 'Inglés')
+codebook_reduced <- filter(codebook, `Indice` %in% vars_interest)
 
 #The following function finds out the year of each data set by selecting its first cell.
 #Like previously, it works because the data sets are divided by year.
@@ -79,4 +80,3 @@ variable_selection(BRAZIL_2015)
 
 full_dataset <- bind_rows(combining_dataset, BRAZIL_2018_FILTERED, BRAZIL_2017_FILTERED,
                       BRAZIL_2016_FILTERED, BRAZIL_2015_FILTERED)
-

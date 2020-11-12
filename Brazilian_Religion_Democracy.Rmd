@@ -1,0 +1,79 @@
+---
+title: "Brazilian Religion & Faith in Democracy"
+author: "Gustavo Arruda Franco"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+#knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(RColorBrewer)
+library(ggthemes)
+theme_set(theme_solarized_2())
+sys.source('data_cleaning.R', envir = knitr::knit_global())
+sys.source('data_analysis.R', envir = knitr::knit_global())
+
+```
+
+## GitHub Documents
+
+This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+
+## Including Code
+
+You can include R code in the document as follows:
+
+```{r religious_population, echo=FALSE}
+
+ggplot(religion_count) +
+  geom_col(aes(x = as.factor(X_002), y = religion_yr_prop,
+               fill = as.factor(religion_condensed)), position = "dodge") +
+  labs(x = 'Year', y = "Proportion",
+       fill = "Religious Group",
+       title = "Proportion of Religious Members to the General Population by Year") +
+  scale_fill_brewer(palette = 'Dark2',
+                    labels = c('1' = 'Catholic', '2' = 'Evangelical', '97' = 'No Religion'))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r democracy_support, echo=FALSE}
+
+levels_of_support <- c('1' = 'Democracy Always Best', '2' = 'Authoritarian Maybe Best',
+                       '3' = 'No Difference')
+
+ggplot(support_democracy_count) +
+  geom_line(aes(x = X_002, y = dem_support_prop,
+               color = as.factor(religion_condensed))) +
+  facet_wrap(~A_001_001, labeller = as_labeller(levels_of_support)) +
+  labs(x = 'Year', y = "Proportion",
+       color = "Religious Group",
+       title = "Proportion of Democracy Supporters within each Religious Group by Year") +
+  scale_color_brewer(palette = 'Dark2',
+                     labels = c('1' = 'Catholic', '2' = 'Evangelical', '97' = 'No Religion'))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r democracy_satisfaction, echo=FALSE}
+
+dataset_condensed %>%
+  filter(A_003_031 > 0 & S_700 %in% main_religions) %>%
+  group_by(X_002, religion_condensed) %>%
+  mutate(mean = mean(A_003_031)) %>%
+  ggplot() +
+  geom_line(aes(x = X_002, y = mean, color = as.factor(religion_condensed))) +
+  labs(x = 'Year', y = "Mean",
+       color = "Religious Group",
+       title = "Mean of Satisfaction with Democracy within each Religious Group by Year") +
+  scale_color_brewer(palette = 'Dark2', 
+                     labels = c('1' = 'Catholic', '2' = 'Evangelical', '97' = 'No Religion'))
+
+```
