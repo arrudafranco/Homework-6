@@ -7,11 +7,11 @@ library(sjlabelled)
 #combining all of them.
 
 
-load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00004532-Latinobarometro_2015_r/Latinobarometro_2015_Eng.rdata")
-load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00005906-Latinobarometro2016_r/Latinobarometro2016Eng_v20170205.rdata")
-load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00006501-Latinobarometro2017_r/Latinobarometro2017Eng_v20180117.rdata")
-Latinobarometro_2018_Esp_R_v20190303 <- readRDS("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/F00008548-Latinobarometro_2018_Esp_R_v20190303/Latinobarometro_2018_Esp_R_v20190303.rds")
-load("C:/Users/Gustavo/OneDrive/Documents/Computation Repo/hw02/hw06/LAT_Latinobarometro2013_r/Latinobarometro2013Eng.rdata")
+load("F00004532-Latinobarometro_2015_r/Latinobarometro_2015_Eng.rdata")
+load("F00005906-Latinobarometro2016_r/Latinobarometro2016Eng_v20170205.rdata")
+load("F00006501-Latinobarometro2017_r/Latinobarometro2017Eng_v20180117.rdata")
+Latinobarometro_2018_Esp_R_v20190303 <- readRDS("F00008548-Latinobarometro_2018_Esp_R_v20190303/Latinobarometro_2018_Esp_R_v20190303.rds")
+load("LAT_Latinobarometro2013_r/Latinobarometro2013Eng.rdata")
 F00008653_SerieDeTiempo_1995_2018 <- read_xlsx("F00008653-SerieDeTiempo_1995_2018.xlsx")
 
 codebook <- dplyr::select(F00008653_SerieDeTiempo_1995_2018, -('v1995':'v2011')) %>% #Dropping years that will not be analyzed.
@@ -79,3 +79,4 @@ variable_selection(BRAZIL_2015)
 
 full_dataset <- bind_rows(combining_dataset, BRAZIL_2018_FILTERED, BRAZIL_2017_FILTERED,
                       BRAZIL_2016_FILTERED, BRAZIL_2015_FILTERED)
+
